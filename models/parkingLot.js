@@ -1,31 +1,53 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
 
-const parkingLotSchema = new Schema({
-    name: {
+// Define the schema for a parking lot
+const parkingLotSchema = new mongoose.Schema({
+    customerName: {
         type: String,
-        required: true
+        required: true,
     },
-    location:{
+    phoneNumber: {
         type: String,
-        required: true
+        required: true,
     },
-    totalSlots: {
-        type: Number,
-        required: true
+    vehicleNumber: {
+        type: String,
+        required: true,
     },
-    availableSlots: {
-        type: Number,
-        required: true
+    vehicleType: {
+        type: String,
+        required: true,
     },
-    pricePerHour: {
+    duration: {
         type: Number,
-        required: true
+        required: true,
+    },
+    rentPerHour: {
+        type: Number,
+        default: 50,  // You can keep a default or set it when creating a new slot
+    },
+    totalRent: {
+        type: Number,
+        default: 0, // This will be calculated based on duration and rentPerHour
+    },
+    arrivalTime: {
+        type: String,
+    },
+    bookingDate: {
+        type: Date,
     },
     createdAt: {
         type: Date,
-        default: Date.now
-    }
+        default: Date.now,
+    },
 });
 
-module.exports = mongoose.model("ParkingLot",parkingLotSchema);
+// Add a method to calculate the total rent based on duration and rent per hour
+parkingLotSchema.methods.calculateTotalRent = function () {
+    this.totalRent = this.duration * this.rentPerHour;
+};
+
+// Export the ParkingLot model
+const ParkingLot = mongoose.model('ParkingLot', parkingLotSchema);
+
+module.exports = ParkingLot;

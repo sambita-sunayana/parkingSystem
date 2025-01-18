@@ -1,31 +1,49 @@
-const express = require ("express");
-const mongoose = require ("mongoose");
-const cors = require("cors");
-const app = express();
-
-//import all routes component
-const userRoutes = require("./routes/userRoutes");
-const parkingLotRoutes = require("./routes/parkingLotRoutes");
-const reservationRoutes = require("./routes/resrvationRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
+const express = require('express');
+const connectDB = require('./config/db.js');  // Database connection
+const parkingLotRoutes = require('./routes/parkingLotRoute.js'); // Use parking lot routes
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config({ path: './config.env' });  // Load environment variables
 
 
-//middleware to parse json data
-app.use(express.json());
-
-//api routes
-app.use("/api/users", userRoutes);
-app.use("/api/parking-lot", parkingLotRoutes);
-app.use("/api/reservations", reservationRoutes);
-app.use("/api/payments", paymentRoutes);
-
-//import 
-
-//connect to mongoDb
+// Connect to MongoDB
 connectDB();
 
-//start server
-const PORT = 3000;
-app.listen(PORT, () =>{
-    console.log(`server is running on port ${PORT}`);
+const app = express();
+
+// Middleware to parse JSON requests
+app.use(express.json());
+app.use(cors());
+
+// Basic route for home page
+app.get("/home", (req, res) => {
+    res.send("Welcome to the Parking System!");
+});
+
+// Use parking lot routes with prefix '/api'
+app.use('/api', parkingLotRoutes);
+
+// Serve static files for React frontend (if any)
+app.use(express.static(path.join(__dirname, './client/build')));
+
+// If React frontend is used, this will serve the React app
+app.get('*', function (_, res) {
+    res.sendFile(path.join(__dirname, './client/build/index.html'), function (err) {
+        if (err) {
+            res.status(500).send(err);
+        }
+    });
+});
+
+// Handle invalid routes
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found. Please check the URL.' });
+});
+
+// Define the port
+const PORT = process.env.PORT || 5000;
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
 });
